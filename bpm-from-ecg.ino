@@ -8,9 +8,9 @@ long counter = 0;
 
 void setup() {
   // initialize the serial communication:
-  Serial.begin(9600);
-  pinMode(10, INPUT); // Setup for leads off detection LO +
-  pinMode(3, INPUT); // Setup for leads off detection LO -
+  Serial.begin(230400);
+  pinMode(8, INPUT); // Setup for leads off detection LO +
+  pinMode(9, INPUT); // Setup for leads off detection LO -
 
   attachInterrupt(0, right_Hand_Detect, FALLING);
   //attachInterrupt(1, left_Hand_Detect, FALLING);
@@ -31,7 +31,7 @@ void loop() {
       i++;
       
       if (i >= 30){
-        for (int j = 0; j < 60; j++){
+        for (int j = 0; j < 60; j++){     
           sum = sum + average_value[j];
           if (average_value[j] > 370){
             Serial.println(average_value[j]);

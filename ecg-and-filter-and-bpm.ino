@@ -12,14 +12,19 @@
 
 long pastTime=0, timer;
 double hrv =0, hr = 72, interval = 0;
-int value = 0, count = 0;  
+int value = 0, count = 0, BPM = 0, inInt = 0, beat_new = 0, beat_old = 0;  
 bool flag = 0;
 float filteredValue = 0;
 float doubleFilteredValue = 0;
+int bpmThreshold = 620;
 
 #define shutdown_pin 10 
 #define threshold 100 // to identify R peak
 #define timer_value 10000 // 10 seconds timer to calculate hr
+
+boolean belowThreshold = true;
+float beats[419];
+int beatIndex;
 
 template <int order> // order is 1 or 2
 
@@ -217,7 +222,7 @@ void loop() {
     // filteredValue = hp.filt(value); // HP filter
 
     if((value > threshold) && (!flag)) {
-      count++;
+      count++;  
       Serial.println("in");
       flag = 1;
       interval = micros() - pastTime; //RR interval
@@ -235,12 +240,54 @@ void loop() {
     }
 
     hrv = hr/60 - interval/1000000;
-    Serial.print(hr);
-    Serial.print(",");
-    Serial.print(hrv);
-    Serial.print(",");
+    // Serial.print(hr);
+    // Serial.print(",");
+    // Serial.print(hrv);
+    // Serial.print(",");
     Serial.println(filteredValue); // For LP + HP
     // Serial.println(filteredValue);
     delay(1);
+
+    String inString = Serial.readStringUntil('\n');
+    Serial.println(inString);
+
+    if (inString != " ") {
+      // If leads off detection is true notify with blue line
+      if (inString.equals("leads off!")) { 
+        return;
+      }
+      // If the data is good let it through
+      else 
+      {
+        inInt = inString.toInt(); 
+        
+        // BPM calculation check
+        if (inInt > bpmThreshold && belowThreshold == true)
+        {
+          calculateBPM();
+          belowThreshold = false;
+        }
+        else if(inInt < bpmThreshold)
+        {
+          belowThreshold = true;
+        }
+      }
+    }
   }
 }
+  
+void calculateBPM () 
+{  
+  int beat_new = millis();    // get the current millisecond
+  int diff = beat_new - beat_old;    // find the time between the last two beats
+  float currentBPM = 60000 / diff;    // convert to beats per minute
+  beats[beatIndex] = currentBPM;  // store to array to convert the average
+  float total = 0.0;
+  for (int i = 0; i < 419; i++){
+    total += beats[i];
+  }
+  BPM = int(total / 419);
+  Serial.println(currentBPM);
+  beat_old = beat_new;
+  beatIndex = (beatIndex + 1) % 419;  // cycle through the array instead of using FIFO queue
+  }
