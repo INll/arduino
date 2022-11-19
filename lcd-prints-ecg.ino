@@ -42,7 +42,3 @@ void timerIsr() {
   Serial.println(val);
   adc_flag = 1;
 }
-
-void hbrMonitoring() {
-
-}
