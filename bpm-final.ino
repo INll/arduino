@@ -4,10 +4,6 @@
 // Acquire signal connected to the selected analog pin
 int analogPin = A0;
 
-// Global variable to store the value from the analog pin
-int ECG = 0;
-int adc_flag = 0;
-
 // Constants
 const float rThreshold = 0.7;
 const int minDiff = 10;
